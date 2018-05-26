@@ -34,7 +34,7 @@ jobs:
           key: jars-{{ checksum "build.gradle" }}
       - run:
           name: Run Tests
-          command: ./gradlew lint test
+          command: ./gradlew test # add linter
       - store_artifacts:
           path: build/reports
           destination: reports
