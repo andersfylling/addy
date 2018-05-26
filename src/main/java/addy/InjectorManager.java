@@ -5,7 +5,6 @@ import addy.context.ServiceContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class InjectorManager
 {
@@ -13,7 +12,7 @@ public class InjectorManager
     private final ServiceContext ctx;
     private final List<Class<?>> configClasses;
     private final List<Object> configClassInstances;
-    private final Injector configLoader;
+    private final Injector injector;
     private final AnnotationConfig annotations;
 
     /**
@@ -29,8 +28,10 @@ public class InjectorManager
         this.configClasses.addAll(Arrays.asList(configClasses));
         this.annotations = new AnnotationConfig();
 
-        this.configLoader = new Injector(this.configClasses);
-        this.configLoader.setAnnotations(this.annotations);
+        this.injector = new Injector(this.configClasses);
+        this.injector.setAnnotations(this.annotations);
+
+        this.injector.addServiceInstance(ServiceContext.NAME, this.ctx);
     }
 
     /**
@@ -46,17 +47,17 @@ public class InjectorManager
      * Load all instances to memory, blocked
      */
     public void loadAndWait() {
-        this.configLoader.addConfigurationInstances(this.configClassInstances);
+        this.injector.addConfigurationInstances(this.configClassInstances);
 
         // load all @GameComponents from @GameConfiguration classes
-        this.configLoader.activateFailOnNullInstance();
-        this.configLoader.load();
+        this.injector.activateFailOnNullInstance();
+        this.injector.load();
 
         // add the component instances to the GameContext
-        configLoader.installServices(ctx);
+        injector.installServices(ctx);
 
         // invoke DepWire methods
-        configLoader.findDepWireMethodsAndPopulate();
+        injector.findDepWireMethodsAndPopulate();
     }
 
     /**

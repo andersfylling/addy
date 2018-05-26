@@ -82,10 +82,10 @@ public class Injector
      * @param name
      * @param instance
      */
-    public void addGameComponentInstance(final String name,
-                                         final Object instance)
+    public void addServiceInstance(final String name,
+                                   final Object instance)
     {
-        this.components.add(new GameComponentHolder(name.toLowerCase(), instance));
+        this.components.add(new GameComponentHolder(name, instance));
     }
 
     /**
@@ -255,6 +255,10 @@ public class Injector
         }
 
         this.sortByDependencies();
+
+        for (GameComponentHolder component : this.components) {
+            System.out.println(component.toStringWithAllDependencies());
+        }
 
         // instantiate components
         for (GameComponentHolder component : this.components) {

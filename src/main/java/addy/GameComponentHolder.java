@@ -148,7 +148,7 @@ public class GameComponentHolder
 
         // check if component uses itself as a param
         for (final String dependency : this.dependencies) {
-            if (this.name.equals(dependency)) {
+            if (this.name.equals(dependency.toLowerCase())) {
                 throwDependencyCyclingError(this.name, this.name);
             }
         }
@@ -158,7 +158,7 @@ public class GameComponentHolder
         List<GameComponentHolder> parameters = new ArrayList<>();
         for (final String dependency : this.dependencies) {
             for (final GameComponentHolder component : components) {
-                if (!dependency.equals(component.getName())) {
+                if (!dependency.toLowerCase().equals(component.getName().toLowerCase())) {
                     continue;
                 }
 

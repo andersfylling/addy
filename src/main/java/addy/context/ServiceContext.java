@@ -14,6 +14,7 @@ public class ServiceContext
         AnnotationGetter,
         Closer
 {
+    public static final String NAME = "service-context";
     private final Map<String, Object> services;
 
     public ServiceContext() {
@@ -21,7 +22,7 @@ public class ServiceContext
     }
 
     @Override
-    public void setService(final String name, final Object service) {
+    public void setService(String name, final Object service) {
         if (name == null || name.isEmpty()) {
             String err = "unable to store class instance without a name for object: " + service.toString();
             throw new RuntimeException(err);
@@ -30,13 +31,13 @@ public class ServiceContext
             String err = "cannot store null instance";
             throw new RuntimeException(err);
         }
-        this.services.put(name, service);
+        this.services.put(name.toLowerCase(), service);
     }
 
     @Override
     public Object getService(final String name) {
-        if (this.services.containsKey(name)) {
-            return this.services.get(name);
+        if (this.services.containsKey(name.toLowerCase())) {
+            return this.services.get(name.toLowerCase());
         }
 
         return null;
