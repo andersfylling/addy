@@ -33,7 +33,7 @@ public class GameComponentHolder
                                final ServiceInvoker initializer,
                                final Object classInstance)
     {
-        this.name = name;
+        this.name = formatServiceName(name);
         this.function = function;
         this.dependencies = new ArrayList<>(parameters); // this will populate later on
         this.requiredDependencies = new ArrayList<>(parameters);
@@ -52,7 +52,7 @@ public class GameComponentHolder
     public GameComponentHolder(final String name,
                                final Object instance)
     {
-        this.name = name;
+        this.name = formatServiceName(name);
         this.instance = instance;
 
         this.function = null;
@@ -60,6 +60,10 @@ public class GameComponentHolder
         this.requiredDependencies = new ArrayList<>();
         this.initializer = null;
         this.classInstance = null;
+    }
+
+    private String formatServiceName(final String name) {
+        return name.toLowerCase();
     }
 
     /**

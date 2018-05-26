@@ -53,7 +53,7 @@ public class Injector
                 }
 
                 Inject inject = (Inject) a;
-                params.add(inject.value());
+                params.add(inject.value().toLowerCase());
                 break;
             }
         }
@@ -85,7 +85,7 @@ public class Injector
     public void addGameComponentInstance(final String name,
                                          final Object instance)
     {
-        this.components.add(new GameComponentHolder(name, instance));
+        this.components.add(new GameComponentHolder(name.toLowerCase(), instance));
     }
 
     /**
@@ -96,7 +96,7 @@ public class Injector
      */
     private String getGameComponentName(final Service component, final String defaultName) {
         if (component == null) {
-            return defaultName;
+            return defaultName.toLowerCase();
         }
 
         String name = defaultName;
@@ -111,7 +111,7 @@ public class Injector
             name = componentName;
         }
 
-        return name;
+        return name.toLowerCase();
     }
 
     private void loadGameComponentRegisters(final Class<?> config, final Object instance) {
@@ -144,7 +144,7 @@ public class Injector
             List<String> params = getParameterServiceName(method);
 
             GameComponentHolder data = new GameComponentHolder(
-                    name,
+                    name.toLowerCase(),
                     method,
                     params,
                     GameComponentHolder::defaultMethodInvoker,
@@ -176,12 +176,6 @@ public class Injector
                 continue;
             }
             String className = component.getSimpleName();
-            {
-                // make the first letter of class name lower case
-                char c[] = className.toCharArray();
-                c[0] = Character.toLowerCase(c[0]);
-                className = new String(c);
-            }
             String name = this.getGameComponentName(service, className);
 
             // constructor annotations
@@ -197,7 +191,7 @@ public class Injector
                 break;
             }
             if (constructor == null) {
-                throw new ClassFormatError("No constructor with @GameDepWire found for " + name);
+                throw new ClassFormatError("No constructor with @DepWire found for " + name);
             }
 
             Annotation[][] annotations = constructor.getParameterAnnotations();
@@ -285,7 +279,7 @@ public class Injector
             }
 
             if (counter > 1) {
-                throw new StackOverflowError("found " + Integer.toString(counter) + " instance of @GameComponent " + a.toStringWithDependencies());
+                throw new StackOverflowError("found " + Integer.toString(counter) + " instance of @Service " + a.toStringWithDependencies());
             }
         }
     }
@@ -297,7 +291,7 @@ public class Injector
                 continue;
             }
 
-            String err = "instance for game component was null: " + component.getName();
+            String err = "instance for service was null: " + component.getName();
             if (this.failOnNullInstance) {
                 throw new InstantiationError(err);
             } else {
