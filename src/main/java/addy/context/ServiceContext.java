@@ -179,6 +179,10 @@ public class ServiceContext
     public void close() {
         for (Map.Entry<String, Object> entry : this.getServices().entrySet()) {
             Object component = entry.getValue();
+            if (component == this) {
+                continue;
+            }
+
             Method[] methods = component.getClass().getMethods();
             for (Method method : methods) {
                 if (method.getName().equals("close") && method.getParameterTypes().length == 0) {
