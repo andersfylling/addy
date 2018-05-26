@@ -77,6 +77,10 @@ public class InjectorManager
         })).start();
     }
 
+    public ServiceContext getSrvCtx() {
+        return ctx;
+    }
+
     /**
      * Must be added before this.load is called.
      *
