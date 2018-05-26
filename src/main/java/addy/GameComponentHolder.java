@@ -97,7 +97,7 @@ public class GameComponentHolder
             final String depName = dependency.getName();
 
             // don't evaluate itself
-            if (this.name.equals(depName)) {
+            if (this.name.equals(formatServiceName(depName))) {
                 continue;
             }
 
@@ -223,7 +223,7 @@ public class GameComponentHolder
         }
 
         for (final String dependency : dependencies) {
-            if (name.equals(dependency)) {
+            if (formatServiceName(name).equals(formatServiceName(dependency))) {
                 dependent = true;
                 break;
             }

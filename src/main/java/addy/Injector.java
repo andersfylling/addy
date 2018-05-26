@@ -348,7 +348,7 @@ public class Injector
     public void installServices(ServiceSetter ctx) {
         // add instances to game context
         for (GameComponentHolder component : this.components) {
-            ctx.setService(component.getName(), component.getInstance());
+            ctx.setService(component.getName().toLowerCase(), component.getInstance());
         }
     }
 
@@ -398,7 +398,7 @@ public class Injector
             List<Object> dependencies = new ArrayList<>();
             for (String dependency : params) {
                 for (GameComponentHolder candidate : this.components) {
-                    if (dependency.equals(candidate.getName())) {
+                    if (dependency.toLowerCase().equals(candidate.getName().toLowerCase())) {
                         dependencies.add(candidate.getInstance());
                         break;
                     }

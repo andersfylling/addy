@@ -160,6 +160,15 @@ public class ServiceContext
         return services.toArray();
     }
 
+    private void print() {
+        System.out.println("Services");
+        foreach((String name, Object srv) -> {
+            System.out.print("srv => " + name + "\n");
+            return false;
+        });
+        System.out.print("-----------\n");
+        System.out.flush();
+    }
 
 
     /**
