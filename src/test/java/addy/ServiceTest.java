@@ -12,6 +12,7 @@ public class ServiceTest {
                 addy.testdata.Services.class
         );
         initializer.loadAndWait();
+        initializer.getSrvCtx().close();
     }
 
 
@@ -23,11 +24,19 @@ public class ServiceTest {
     public void testSelfCyclingDependency() {
         Injector injector = new Injector(ServicesWithSelfDepCycling.class);
         injector.load();
+        injector.branchOutDependencyTree();
+        injector.sortByDependencies();
+        injector.instantiateComponents();
+        injector.crashOnNullInstances();
     }
 
     @Test(expected = InstantiationError.class)
     public void testCyclingDependency() {
         Injector injector = new Injector(ServicesWithDepCycling.class);
         injector.load();
+        injector.branchOutDependencyTree();
+        injector.sortByDependencies();
+        injector.instantiateComponents();
+        injector.crashOnNullInstances();
     }
 }

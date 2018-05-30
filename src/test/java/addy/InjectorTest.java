@@ -15,6 +15,9 @@ public class InjectorTest {
         Injector loader = new Injector(c);
         loader.activateFailOnNullInstance();
         loader.load();
+        loader.branchOutDependencyTree();
+        loader.sortByDependencies();
+        loader.instantiateComponents();
 
         ServiceContext ctx = new ServiceContext();
         loader.installServices(ctx);
@@ -30,6 +33,9 @@ public class InjectorTest {
         Injector loader = new Injector(c);
         loader.activateFailOnNullInstance();
         loader.load();
+        loader.branchOutDependencyTree();
+        loader.sortByDependencies();
+        loader.instantiateComponents();
         loader.installServices(ctx);
 
         // make sure all the methods were found, processed and instantiated
@@ -43,6 +49,9 @@ public class InjectorTest {
         Injector loader = new Injector(c1, c2);
         loader.activateFailOnNullInstance();
         loader.load();
+        loader.branchOutDependencyTree();
+        loader.sortByDependencies();
+        loader.instantiateComponents();
 
         ServiceContext ctx = new ServiceContext();
         loader.installServices(ctx);
@@ -51,7 +60,7 @@ public class InjectorTest {
         assertEquals(Services.NUM_OF_GAME_COMPONENTS + ServicesExtra.NUM_OF_GAME_COMPONENTS, ctx.size());
     }
 
-    @Test(expected = InstantiationError.class)
+    @Test(expected = RuntimeException.class)
     public void testServicesWithUnknownDependency() {
         Class<?> c = ServicesWithUnknownDep.class;
         Injector loader = new Injector(c);
@@ -70,6 +79,10 @@ public class InjectorTest {
         Injector loader = new Injector(c);
         loader.activateFailOnNullInstance();
         loader.load();
+        loader.branchOutDependencyTree();
+        loader.sortByDependencies();
+        loader.instantiateComponents();
+        loader.crashOnNullInstances();
     }
 
     @Test(expected = InstantiationError.class)
@@ -78,6 +91,10 @@ public class InjectorTest {
         Injector loader = new Injector(c);
         loader.activateFailOnNullInstance();
         loader.load();
+        loader.branchOutDependencyTree();
+        loader.sortByDependencies();
+        loader.instantiateComponents();
+        loader.crashOnNullInstances();
     }
 
 }

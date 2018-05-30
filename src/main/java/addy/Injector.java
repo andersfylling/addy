@@ -246,32 +246,15 @@ public class Injector
 
             this.loadGameComponentRegisters(instance.getClass(), instance);
         }
+    }
 
-        this.crashOnDuplicates();
-
-        // update dependency list
-        for (final GameComponentHolder component : this.components) {
-            component.createDependencyTree(this.components);
-        }
-
-        this.sortByDependencies();
-
-        for (GameComponentHolder component : this.components) {
-            System.out.println(component.toStringWithAllDependencies());
-        }
-
-        // instantiate components
+    public void instantiateComponents() {
         for (GameComponentHolder component : this.components) {
             component.initialize(this.components);
         }
-
-        this.crashOnNullInstances();
-
-        // create game logic components
-
     }
 
-    private void crashOnDuplicates() {
+    public void crashOnDuplicates() {
         // check for name duplicates
         for (GameComponentHolder a : this.components) {
             int counter = 0;
@@ -288,7 +271,7 @@ public class Injector
         }
     }
 
-    private void crashOnNullInstances() {
+    public void crashOnNullInstances() {
         // check for null instances and give a warning or fail
         for (GameComponentHolder component : this.components) {
             if (component.getInstance() != null) {
@@ -305,7 +288,13 @@ public class Injector
         }
     }
 
-    private void sortByDependencies() {
+    public void branchOutDependencyTree() {
+        for (final GameComponentHolder component : this.components) {
+            component.createDependencyTree(this.components);
+        }
+    }
+
+    public void sortByDependencies() {
         // sort based on number of dependencies to speed up next sort
         this.components.sort((left, right) -> {
             int a = left.nrOfDependencies();

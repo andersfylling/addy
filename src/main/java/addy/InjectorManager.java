@@ -46,17 +46,32 @@ public class InjectorManager
     /**
      * Load all instances to memory, blocked
      */
-    public void loadAndWait() {
-        this.injector.addConfigurationInstances(this.configClassInstances);
+    public void loadAndWait()
+    {
+        injector.addConfigurationInstances(this.configClassInstances);
 
-        // load all @GameComponents from @GameConfiguration classes
-        this.injector.activateFailOnNullInstance();
-        this.injector.load();
+        // load all @Services from @Configuration classes
+        injector.activateFailOnNullInstance();
+        injector.load();
 
-        // add the component instances to the GameContext
+        // detect duplicates and crash on matches
+        injector.crashOnDuplicates();
+
+        // branch out the dependencies, such that Service A, with dependency B, is
+        // aware of all dependencies of B.
+        injector.branchOutDependencyTree();
+
+        // sort the services, based on dependency requirements
+        injector.sortByDependencies();
+
+        // instantiate services/clients and crash if any nil instances are detected
+        injector.instantiateComponents();
+        injector.crashOnNullInstances();
+
+        // add the component instances to the ServiceContext
         injector.installServices(ctx);
 
-        // invoke DepWire methods
+        // invoke DepWire methods with required services
         injector.findDepWireMethodsAndPopulate();
     }
 
@@ -90,20 +105,6 @@ public class InjectorManager
     public void addInstantiadedConfigurations(Object... instances) {
         this.configClassInstances.addAll(Arrays.asList(instances));
     }
-
-//    private void populateGameLogicManager() {
-//        GameLogicManager manager = (GameLogicManager) this.ctx.getAssuredInstance("gameLogicManager");
-//
-//        for (Map.Entry<String, Object> entry : this.ctx.getServices().entrySet()) {
-//            Object component = entry.getValue();
-//            if (component.getClass().getAnnotation(GameLogic.class) == null) {
-//                continue;
-//            }
-//
-//            int wave = component.getClass().getAnnotation(GameLogic.class).wave();
-//            manager.addGameLogic(wave, (GameLogicInterface) component);
-//        }
-//    }
 
     public void close() {
         this.ctx.close();

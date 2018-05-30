@@ -1,5 +1,9 @@
 package addy.context;
 
+import addy.Closer;
+
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -12,7 +16,7 @@ public class ServiceContext
         ServiceGetter,
         ServiceSetter,
         AnnotationGetter,
-        Closer
+        Closeable
 {
     public static final String NAME = "service-context";
     private final Map<String, Object> services;
@@ -63,6 +67,12 @@ public class ServiceContext
         return this.services.size();
     }
 
+    public void foreach(final ServiceVoidCallback cb) {
+        this.foreach((String name, Object srv) -> {
+            cb.addService(name, srv);
+            return false;
+        }, null);
+    }
     public Map<String, Object> foreach(final ServiceCallback cb) {
         return this.foreach(cb, null);
     }
@@ -161,6 +171,19 @@ public class ServiceContext
         return services.toArray();
     }
 
+    public Object[] getServicesWithInterface(Class i) {
+        Collection<Object> values = this.foreach((String name, Object service) -> {
+            for (Class interfaceClass: service.getClass().getInterfaces()) {
+                if (interfaceClass == i) {
+                    return true;
+                }
+            }
+            return false;
+        }).values();
+
+        return values.toArray();
+    }
+
     private void print() {
         System.out.println("Services");
         foreach((String name, Object srv) -> {
@@ -173,25 +196,18 @@ public class ServiceContext
 
 
     /**
-     * When shutting down the game session, go through every game component and run
-     * every method with the name close.
+     * When shutting down the application, go through every service
+     * implementing the Closer interface and invoke the close method.
      */
-    public void close() {
-        for (Map.Entry<String, Object> entry : this.getServices().entrySet()) {
-            Object component = entry.getValue();
-            if (component == this) {
-                continue;
-            }
-
-            Method[] methods = component.getClass().getMethods();
-            for (Method method : methods) {
-                if (method.getName().equals("close") && method.getParameterTypes().length == 0) {
-                    try {
-                        method.invoke(component);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
+    @Override
+    public void close()
+    {
+        for (Object service : getServicesWithInterface(Closer.class)) {
+            Closer closer = (Closer) service;
+            try {
+                closer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

@@ -15,6 +15,5 @@ public interface AnnotationGetter
     Object[] getServicesWithMemberAnnotation(Class annotation);
     //Object[] getServicesWithMemberAnnotations(Class[] annotations);
 
-    Map<String, Object> foreach(final ServiceCallback cb);
     Map<String, Object> foreach(final ServiceCallback cb, final Class classAnnotation);
 }
