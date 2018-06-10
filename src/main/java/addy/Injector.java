@@ -16,7 +16,7 @@ public class Injector
     private static final String TAG = "GameConfigurationLoader";
 
     private final List<Class<?>> configs;
-    private final List<GameComponentHolder> components;
+    private final List<ServiceHolder> components;
     private final List<Object> instances;
 
     private boolean failOnNullInstance;
@@ -61,7 +61,7 @@ public class Injector
         return params;
     }
 
-    public void addGameConfigurations(final Class<?>... configs) {
+    public void addConfigurations(final Class<?>... configs) {
         this.configs.addAll(Arrays.asList(configs));
     }
 
@@ -85,7 +85,7 @@ public class Injector
     public void addServiceInstance(final String name,
                                    final Object instance)
     {
-        this.components.add(new GameComponentHolder(name, instance));
+        this.components.add(new ServiceHolder(name, instance));
     }
 
     /**
@@ -94,7 +94,7 @@ public class Injector
      * @param defaultName
      * @return
      */
-    private String getGameComponentName(final Service component, final String defaultName) {
+    private String getServiceName(final Service component, final String defaultName) {
         if (component == null) {
             return defaultName.toLowerCase();
         }
@@ -114,7 +114,7 @@ public class Injector
         return name.toLowerCase();
     }
 
-    private void loadGameComponentRegisters(final Class<?> config, final Object instance) {
+    private void loadServiceRegisters(final Class<?> config, final Object instance) {
         // check for component list
         for (Method method : config.getDeclaredMethods()) {
             // ensure method is a GameComponent
@@ -143,17 +143,17 @@ public class Injector
             // get params
             List<String> params = getParameterServiceName(method);
 
-            GameComponentHolder data = new GameComponentHolder(
+            ServiceHolder data = new ServiceHolder(
                     name.toLowerCase(),
                     method,
                     params,
-                    GameComponentHolder::defaultMethodInvoker,
+                    ServiceHolder::defaultMethodInvoker,
                     instance);
             components.add(data);
         }
     }
 
-    private void loadGameComponentRegisters(final Class<?> config) {
+    private void loadServiceRegisters(final Class<?> config) {
 
         Object instance = null;
         try {
@@ -165,10 +165,10 @@ public class Injector
             return;
         }
 
-        this.loadGameComponentRegisters(config, instance);
+        this.loadServiceRegisters(config, instance);
     }
 
-    private void registerConstructorGameComponents(final Class<?> config) {
+    private void registerConstructorServices(final Class<?> config) {
         Class<?>[] components = config.getAnnotation(ServiceLinker.class).value();
         for (Class<?> component : components) {
             Service service = component.getAnnotation(Service.class);
@@ -176,7 +176,7 @@ public class Injector
                 continue;
             }
             String className = component.getSimpleName();
-            String name = this.getGameComponentName(service, className);
+            String name = this.getServiceName(service, className);
 
             // constructor annotations
             Constructor<?>[] constructors = component.getConstructors();
@@ -209,11 +209,11 @@ public class Injector
                 }
             }
 
-            GameComponentHolder holder = new GameComponentHolder(
+            ServiceHolder holder = new ServiceHolder(
                     name,
                     constructor,
                     dependencies,
-                    GameComponentHolder::defaultConstructorInvoker,
+                    ServiceHolder::defaultConstructorInvoker,
                     null);
             this.components.add(holder);
         }
@@ -227,11 +227,11 @@ public class Injector
 
             // check if content of supplied list have any GameComponent
             if (config.getAnnotation(ServiceLinker.class) != null) {
-                this.registerConstructorGameComponents(config);
+                this.registerConstructorServices(config);
             }
 
             // check methods
-            this.loadGameComponentRegisters(config);
+            this.loadServiceRegisters(config);
         }
 
         // also check live instances if injected
@@ -244,22 +244,22 @@ public class Injector
                 continue;
             }
 
-            this.loadGameComponentRegisters(instance.getClass(), instance);
+            this.loadServiceRegisters(instance.getClass(), instance);
         }
     }
 
     public void instantiateComponents() {
-        for (GameComponentHolder component : this.components) {
+        for (ServiceHolder component : this.components) {
             component.initialize(this.components);
         }
     }
 
     public void crashOnDuplicates() {
         // check for name duplicates
-        for (GameComponentHolder a : this.components) {
+        for (ServiceHolder a : this.components) {
             int counter = 0;
             final String name = a.getName();
-            for (GameComponentHolder b : this.components) {
+            for (ServiceHolder b : this.components) {
                 if (name.equals(b.getName())) {
                     counter++;
                 }
@@ -273,7 +273,7 @@ public class Injector
 
     public void crashOnNullInstances() {
         // check for null instances and give a warning or fail
-        for (GameComponentHolder component : this.components) {
+        for (ServiceHolder component : this.components) {
             if (component.getInstance() != null) {
                 continue;
             }
@@ -289,7 +289,7 @@ public class Injector
     }
 
     public void branchOutDependencyTree() {
-        for (final GameComponentHolder component : this.components) {
+        for (final ServiceHolder component : this.components) {
             component.createDependencyTree(this.components);
         }
     }
@@ -313,7 +313,7 @@ public class Injector
         while (unsorted) {
             unsorted = false;
             for (int i = 0; i < this.components.size() && !unsorted; i++) {
-                GameComponentHolder current = this.components.get(i);
+                ServiceHolder current = this.components.get(i);
                 if (current.getInstance() != null) {
                     continue;
                 }
@@ -340,7 +340,7 @@ public class Injector
 
     public void installServices(ServiceSetter ctx) {
         // add instances to game context
-        for (GameComponentHolder component : this.components) {
+        for (ServiceHolder component : this.components) {
             ctx.setService(component.getName().toLowerCase(), component.getInstance());
         }
     }
@@ -363,7 +363,7 @@ public class Injector
 
             this.populateGameDepWireMethods(instance);
         }
-        for (GameComponentHolder holder : this.components) {
+        for (ServiceHolder holder : this.components) {
             Object instance = holder.getInstance();
             this.populateGameDepWireMethods(instance);
         }
@@ -390,7 +390,7 @@ public class Injector
             // get dependency instances
             List<Object> dependencies = new ArrayList<>();
             for (String dependency : params) {
-                for (GameComponentHolder candidate : this.components) {
+                for (ServiceHolder candidate : this.components) {
                     if (dependency.toLowerCase().equals(candidate.getName().toLowerCase())) {
                         dependencies.add(candidate.getInstance());
                         break;
@@ -400,7 +400,7 @@ public class Injector
 
             // inject dependencies
             try {
-                GameComponentHolder.defaultMethodInvoker(method, dependencies.toArray(), instance);
+                ServiceHolder.defaultMethodInvoker(method, dependencies.toArray(), instance);
             } catch (InvocationTargetException | IllegalAccessException e) {
                 System.out.println("unable to inject params into method: " + method.getName() + ", in class: " + instance.getClass().getName());
 

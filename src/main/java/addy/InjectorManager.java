@@ -71,7 +71,10 @@ public class InjectorManager
         // add the component instances to the ServiceContext
         injector.installServices(ctx);
 
-        // invoke DepWire methods with required services
+        // instantiate clients
+        //injector.instantiateClients();
+
+        // invoke DepWire methods with required services & clients
         injector.findDepWireMethodsAndPopulate();
     }
 

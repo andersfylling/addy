@@ -1,14 +1,12 @@
 package addy;
 
-import addy.annotations.*;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameComponentHolder
+public class ServiceHolder
 {
 
     private final String name;
@@ -27,11 +25,11 @@ public class GameComponentHolder
      * @param parameters
      * @param initializer
      */
-    public GameComponentHolder(final String name,
-                               final Object function,
-                               final List<String> parameters,
-                               final ServiceInvoker initializer,
-                               final Object classInstance)
+    public ServiceHolder(final String name,
+                         final Object function,
+                         final List<String> parameters,
+                         final ServiceInvoker initializer,
+                         final Object classInstance)
     {
         this.name = formatServiceName(name);
         this.function = function;
@@ -49,8 +47,8 @@ public class GameComponentHolder
      * @param name
      * @param instance
      */
-    public GameComponentHolder(final String name,
-                               final Object instance)
+    public ServiceHolder(final String name,
+                         final Object instance)
     {
         this.name = formatServiceName(name);
         this.instance = instance;
@@ -74,7 +72,7 @@ public class GameComponentHolder
      *
      * @param components is a list of injectable components/services (initialized or not)
      */
-    public void createDependencyTree(final List<GameComponentHolder> components)
+    public void createDependencyTree(final List<ServiceHolder> components)
     {
         if (this.instance != null) {
             return;
@@ -88,12 +86,12 @@ public class GameComponentHolder
      *
      * @param components
      * @param root
-     * @see GameComponentHolder#createDependencyTree
+     * @see ServiceHolder#createDependencyTree
      */
-    private void populateDependencyTree(final List<GameComponentHolder> components,
+    private void populateDependencyTree(final List<ServiceHolder> components,
                                         final String root)
     {
-        for (GameComponentHolder dependency : components) {
+        for (ServiceHolder dependency : components) {
             final String depName = dependency.getName();
 
             // don't evaluate itself
@@ -140,7 +138,7 @@ public class GameComponentHolder
     /**
      * Initialize component and every dependency recursively.
      */
-    public void initialize(final List<GameComponentHolder> components)
+    public void initialize(final List<ServiceHolder> components)
     {
         if (this.instance != null) {
             return;
@@ -155,9 +153,9 @@ public class GameComponentHolder
 
         // find and initialize every construction dependency
         // (dependencies required later, "insert DI", is ignored)
-        List<GameComponentHolder> parameters = new ArrayList<>();
+        List<ServiceHolder> parameters = new ArrayList<>();
         for (final String dependency : this.dependencies) {
-            for (final GameComponentHolder component : components) {
+            for (final ServiceHolder component : components) {
                 if (!dependency.toLowerCase().equals(component.getName().toLowerCase())) {
                     continue;
                 }
@@ -188,7 +186,7 @@ public class GameComponentHolder
 
         // convert GameComponent to Object instance
         List<Object> instances = new ArrayList<>();
-        for (GameComponentHolder holder : parameters) {
+        for (ServiceHolder holder : parameters) {
             instances.add(holder.getInstance());
         }
 
